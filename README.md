@@ -1,16 +1,4 @@
-# Create a full-stack prototype repo for "Democracy Change Platform"
-import os, json, textwrap, zipfile, pathlib
 
-root = "/mnt/data/democracy-change-platform"
-server = f"{root}/server"
-client = f"{root}/client"
-
-os.makedirs(server + "/src", exist_ok=True)
-os.makedirs(client + "/src", exist_ok=True)
-os.makedirs(client + "/public", exist_ok=True)
-
-# Root README
-readme = """
 # 民主主義変化プラットフォーム（擬似国会）
 
 コメントを使って意見交換し、法案（モーション）を段階的に審議・修正・投票できる**擬似国会**のプロトタイプです。  
@@ -31,3 +19,48 @@ readme = """
 ```bash
 # root では何もしない想定（サブパッケージごと）
 cd server && npm i && cd ../client && npm i
+```
+
+### 2) サーバーを起動（ポート: 8787）
+```bash
+cd server
+npm run dev
+```
+
+### 3) クライアントを起動（ポート: 5173）
+```bash
+cd client
+npm run dev
+```
+
+### 4) ブラウザでアクセス
+- フロントエンド: http://localhost:5173
+- API: http://localhost:8787
+
+> 初回起動時に `server/data.db` が自動生成されます。
+
+## デプロイのヒント
+- **Server（Express）**: Render / Railway / Fly.io など（`PORT` 環境変数対応）
+- **Client（Vite）**: Vercel / Netlify など（`VITE_API_BASE` をAPI URLに設定）
+- **Docker**: 下の compose 例を参照
+
+## システム設計（概要）
+- **サーバー**: Express + better-sqlite3。REST API + SSE エンドポイント。
+- **DB**: SQLite（単一ファイル）。テーブル: `users`, `motions`, `comments`, `votes`, `stages`。
+- **フロント**: React + Tailwind。ロビー/モーション詳細/モデレーターUI。
+
+## Docker（任意）
+```yaml
+# docker-compose.yml（例）
+services:
+  api:
+    build: ./server
+    ports: ["8787:8787"]
+    environment:
+      - PORT=8787
+  web:
+    build: ./client
+    ports: ["5173:5173"]
+    environment:
+      - VITE_API_BASE=http://localhost:8787
+```
